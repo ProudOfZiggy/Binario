@@ -2,6 +2,9 @@ prefix ?= /usr/local
 bindir = $(prefix)/bin
 
 build:
+	swift build -c release --disable-sandbox
+
+build-universal:
 	swift build -c release --arch arm64 --arch x86_64 --disable-sandbox
 
 install: build

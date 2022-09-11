@@ -11,6 +11,7 @@ public struct BinarioCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "binario",
         abstract: "A Swift command-line tool manage binaries",
+        version: "0.8.10",
         subcommands: [ResolveCommand.self,
                       ChecksumCommand.self,
                       PackagesListCommand.self,

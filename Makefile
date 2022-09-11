@@ -5,8 +5,7 @@ build:
 	swift build -c release --disable-sandbox
 
 install: build
-	install -d "$(bindir)"
-	install ".build/release/binario" "$(bindir)"
+	cp ".build/release/binario" "$(bindir)"
 
 uninstall:
 	rm -rf "$(bindir)/binario"

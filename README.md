@@ -1,3 +1,3 @@
-# binary-generator
+# Binario
 
-A description of this package.
+A tool for automatizarion of generation binary swift packages from external SPM dependencies

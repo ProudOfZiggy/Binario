@@ -2,16 +2,16 @@ prefix ?= /usr/local
 bindir = $(prefix)/bin
 
 build:
-	@swift build -c release --disable-sandbox
+	swift build -c release --disable-sandbox
 
 install: build
-	@install -d "$(bindir)"
-	@install ".build/release/binario" "$(bindir)"
+	install -d "$(bindir)"
+	install ".build/release/binario" "$(bindir)"
 
 uninstall:
-	@rm -rf "$(bindir)/binario"
+	rm -rf "$(bindir)/binario"
 
 clean:
-	@rm -rf .build
+	rm -rf .build
 
 .PHONY: build install uninstall clean

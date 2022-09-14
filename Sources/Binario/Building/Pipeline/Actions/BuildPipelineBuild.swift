@@ -25,7 +25,10 @@ extension BuildPipeline {
                 "-destination", "generic/platform=iOS",
                 "BUILD_DIR=\(buildConfiguration.buildDirectory)",
                 "SKIP_INSTALL=NO",
-                "BUILD_LIBRARY_FOR_DISTRIBUTION=YES"
+                "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
+                "BITCODE_GENERATION_MODE=bitcode",
+                "ENABLE_BITCODE=YES",
+                "OTHER_CFLAGS=\"-fembed-bitcode\""
             ]
 
             let command2: [String] = [

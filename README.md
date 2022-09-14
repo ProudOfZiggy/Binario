@@ -1,3 +1,3 @@
 # Binario
 
-A tool for automatizarion of generation binary swift packages from external SPM dependencies
+A tool for automatization of generation binary swift packages from external SPM dependencies

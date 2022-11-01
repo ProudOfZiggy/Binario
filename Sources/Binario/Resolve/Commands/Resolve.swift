@@ -31,7 +31,10 @@ struct ResolveCommand: ParsableCommand {
                 print("No packages at \(packagesPath.canonicalPath ?? "")")
                 return
             }
-
+            
+            let oldStorage = PackagesChecksumsCacheStorage(packagesPath: packagesPath)
+            oldStorage.migrateToInPackageStorage(packages: packages)
+            
             print("Found packages: \(packages)")
 
             // Attempt to resolve all packages
@@ -102,17 +105,13 @@ struct ResolveCommand: ParsableCommand {
     }
 
     private func packagesToBuild(packages: [Package]) -> [Package] {
-        let cacheIO = PackagesChecksumsCacheStorage(packagesPath: packagesPath)
+        let checksumsCache = Set(packages.compactMap { PackageChecksumCache(package: $0).read() })
 
-        guard let checksums = cacheIO.read() else {
-            return packages
-        }
+        if checksumsCache.isEmpty { return packages }
 
         var packagesToBuild: [Package] = []
         let binaryPackages: [BinaryPackage] = .init(packagesPath: outputPath).filter { $0.isValid }
         let binaryPackageNames = Set(binaryPackages.map { $0.name })
-
-        let checksumsCache = Set(checksums)
 
         for package in packages {
             if !binaryPackageNames.contains(package.binaryName) {

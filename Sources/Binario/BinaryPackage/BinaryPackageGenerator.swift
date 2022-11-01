@@ -64,7 +64,7 @@ class BinaryPackageGenerator {
             .compactMap { URL(string: $0.lastPathComponent) }
 
         let targets = [binaryPackageName] + frameworks.map { $0.deletingPathExtension().lastPathComponent }
-        debugPrint(targets)
+        
         let product = ProductDescription(name: binaryPackageName,
                                          type: .library(.automatic),
                                          targets: targets)

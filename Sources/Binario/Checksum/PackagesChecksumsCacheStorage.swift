@@ -53,4 +53,20 @@ class PackagesChecksumsCacheStorage {
                       isDirectory: true).appendingPathComponent(cacheFileName)
         return url
     }
+    
+    func migrateToInPackageStorage(packages: [Package]) {
+        guard let checksums = read() else { return }
+        
+        var packagesHash: [String: Package] = [:]
+        packages.forEach { packagesHash[$0.name] = $0 }
+        
+        for checksum in checksums {
+            guard let package = packagesHash[checksum.packageName] else { continue }
+            
+            let cache = PackageChecksumCache(package: package)
+            cache.write(checksum: checksum)
+        }
+        
+        clean()
+    }
 }

@@ -10,7 +10,7 @@ import ArgumentParser
 
 struct ChecksumCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(commandName: "checksum",
-                                                           subcommands: [Clean.self, Evaluate.self],
+                                                           subcommands: [Clean.self, Evaluate.self, Write.self],
                                                            defaultSubcommand: Evaluate.self)
 }
 

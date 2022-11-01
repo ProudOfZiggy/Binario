@@ -176,17 +176,13 @@ struct ResolveCommand: ParsableCommand {
     private func cacheChecksum(packages: [Package]) -> [Package] {
         var cachedPackages: [Package] = []
 
-        var checksums: [PackageChecksum] = []
-
         for package in packages {
             if let checksum = try? package.resolvedChecksum {
-                checksums.append(checksum)
+                let cache = PackageChecksumCache(package: package)
+                cache.write(checksum: checksum)
                 cachedPackages.append(package)
             }
         }
-
-        let cache = PackagesChecksumsCacheStorage(packagesPath: packagesPath)
-        cache.write(checksums: checksums)
 
         return cachedPackages
     }

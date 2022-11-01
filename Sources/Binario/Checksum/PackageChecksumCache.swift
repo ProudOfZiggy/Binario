@@ -13,6 +13,10 @@ class PackageChecksumCache {
     
     private var filePath: URL { package.absolutePath.appending(component: fileName).asURL }
     
+    var isEmpty: Bool {
+        !FileManager.default.fileExists(atPath: filePath.absoluteString)
+    }
+    
     init(package: Package) {
         self.package = package
     }

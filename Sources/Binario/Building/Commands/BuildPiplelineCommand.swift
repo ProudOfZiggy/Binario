@@ -21,14 +21,25 @@ private extension BuildPiplelineCommand {
     struct Build: ParsableCommand {
         @Argument(help: "Package containing directory.")
         var packagePath: String
+        
+        @Option(name: .long,
+                help: "Target platforms to build binaries for. Options are \(Platform.allCases.map { $0.rawValue }.joined(separator: ",")).")
+        var platforms: String
 
         mutating func run() throws {
             do {
                 guard let package = Package(path: packagePath) else {
                     throw "No package found at \(packagePath.canonicalPath ?? "")"
                 }
+                
+                let platforms = Array<Platform>(string: platforms)
+                
+                if platforms.isEmpty {
+                    print("No platforms specified. Options are \(Platform.allCases)")
+                    return
+                }
 
-                let config = PackageBuildConfiguration(package: package)
+                let config = PackageBuildConfiguration(package: package, platforms: platforms)
                 let action = BuildPipeline.Build(buildConfiguration: config)
                 try action.run()
             } catch let error {

@@ -9,46 +9,15 @@ import Foundation
 import TSCBasic
 
 extension BuildPipeline {
-
+    
     class Build: BuildPipelineAction {
 
         override func run() throws {
-            var commands: [[String]] = []
-
-            let command1: [String] = [
-                "xcrun",
-                "xcodebuild",
-                "-project", "\(buildConfiguration.xcodeproj)",
-                "-scheme", "\(buildConfiguration.packageName)-Package",
-                "-configuration", "Release",
-                "-archivePath", "\(buildConfiguration.archivesPath)/Release-iphoneos",
-                "-destination", "generic/platform=iOS",
-                "BUILD_DIR=\(buildConfiguration.buildDirectory)",
-                "SKIP_INSTALL=NO",
-                "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
-                "BITCODE_GENERATION_MODE=bitcode",
-                "ENABLE_BITCODE=YES",
-                "OTHER_CFLAGS=\"-fembed-bitcode\""
-            ]
-
-            let command2: [String] = [
-                "xcrun",
-                "xcodebuild",
-                "-project", "\(buildConfiguration.xcodeproj)",
-                "-scheme", "\(buildConfiguration.packageName)-Package",
-                "-configuration", "Release",
-                "-archivePath", "\(buildConfiguration.archivesPath)/Release-iphonesimulator",
-                "-destination", "generic/platform=iOS Simulator",
-                "BUILD_DIR=\(buildConfiguration.buildDirectory)",
-                "SKIP_INSTALL=NO",
-                "BUILD_LIBRARY_FOR_DISTRIBUTION=YES"
-            ]
-
-            commands.append(command1)
-            commands.append(command2)
-
-            for arguments in commands {
-                let process = Process(arguments: arguments,
+            let commandsBuilder = BuildCommandsBuilder(buildConfiguration: buildConfiguration)
+            let commands = commandsBuilder.buildCommands()
+            
+            for command in commands {
+                let process = Process(arguments: command.arguments,
                                       outputRedirection: .pretty)
                 try process.launch()
                 try process.waitUntilExit()

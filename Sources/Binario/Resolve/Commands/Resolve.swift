@@ -17,6 +17,10 @@ struct ResolveCommand: ParsableCommand {
 
     @Option(name: .long, help: "Target directory to store binary packages.")
     var output: String
+    
+    @Option(name: .long,
+            help: "Target platforms to build binaries for. Options are \(Platform.allCases.map { $0.rawValue }.joined(separator: ",")).")
+    var platforms: String
 
     //Just for better semantic
     private var packagesPath: String { packages }
@@ -24,6 +28,13 @@ struct ResolveCommand: ParsableCommand {
 
     mutating func run() throws {
         do {
+            let platforms = Array<Platform>(string: platforms)
+            
+            if platforms.isEmpty {
+                print("No platforms specified. Options are \(Platform.allCases)")
+                return
+            }
+            
             // Extract all packages
             let packages: [Package] = .init(packagesPath: packagesPath)
 
@@ -54,7 +65,7 @@ struct ResolveCommand: ParsableCommand {
             }
 
             // Building packages that need to be build
-            let builtPackages = build(packages: packagesToBuild)
+            let builtPackages = build(packages: packagesToBuild, platforms: platforms)
 
             // Generating binaries from built packages
             let generatedPackages = generateBinaries(packages: builtPackages)
@@ -131,11 +142,11 @@ struct ResolveCommand: ParsableCommand {
         return packagesToBuild
     }
 
-    private func build(packages: [Package]) -> [Package] {
+    private func build(packages: [Package], platforms: [Platform]) -> [Package] {
         var builtPackages: [Package] = []
 
         for package in packages {
-            let configuration = PackageBuildConfiguration(package: package)
+            let configuration = PackageBuildConfiguration(package: package, platforms: platforms)
             let pipeline = BuildPipeline(buildConfiguration: configuration)
 
             do {
@@ -154,7 +165,7 @@ struct ResolveCommand: ParsableCommand {
         var generatedPackages: [Package] = []
 
         for package in packages {
-            let configuration = PackageBuildConfiguration(package: package)
+            let configuration = PackageBuildConfiguration(package: package, platforms: [])
 
             let generator = BinaryPackageGenerator(packageName: package.name,
                                                    binariesPath: outputPath,

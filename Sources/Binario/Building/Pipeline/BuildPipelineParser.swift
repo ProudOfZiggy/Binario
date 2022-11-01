@@ -16,13 +16,15 @@ class BuildPipelineParser {
     
     private let pipelineFileNames = [
         ".binario.build.pipeline", // This one is deprecated
-        "pipeline.binario"]
+        "pipeline.binario"
+    ]
 
     func parse(packagePath: AbsolutePath) -> [BuildPipeline.Action] {
         let pipelines = pipelineFileNames.compactMap {
             Pipeline(fileName: $0,
                      data: try? Data(contentsOf: packagePath.appending(component: $0).asURL))
         }
+            .filter { $0.data != nil }
         
         if pipelines.isEmpty { return [.defaultPipeline] }
         

@@ -41,4 +41,11 @@ class PackageChecksumCache {
     func clean() {
         try? FileManager.default.removeItem(at: filePath)
     }
+    
+    static func clean(packages: [Package]) {
+        packages.forEach {
+            let cache = PackageChecksumCache(package: $0)
+            cache.clean()
+        }
+    }
 }

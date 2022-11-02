@@ -21,6 +21,10 @@ struct ResolveCommand: ParsableCommand {
     @Option(name: .long,
             help: "Target platforms to build binaries for. Options are \(Platform.allCases.map { $0.rawValue }.joined(separator: ",")).")
     var platforms: String
+    
+    @Flag(name: .long,
+          help: "Allow resolve binaries ignoring cache")
+    var ignoreCache: Bool = false
 
     //Just for better semantic
     private var packagesPath: String { packages }
@@ -44,7 +48,13 @@ struct ResolveCommand: ParsableCommand {
             }
             
             let oldStorage = PackagesChecksumsCacheStorage(packagesPath: packagesPath)
-            oldStorage.migrateToInPackageStorage(packages: packages)
+            
+            if ignoreCache {
+                oldStorage.clean()
+                PackageChecksumCache.clean(packages: packages)
+            } else {
+                oldStorage.migrateToInPackageStorage(packages: packages)
+            }
             
             print("Found packages: \(packages)")
 

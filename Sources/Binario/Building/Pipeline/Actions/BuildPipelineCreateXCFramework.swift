@@ -13,7 +13,7 @@ extension BuildPipeline {
     class CreateXCFramework: BuildPipelineAction {
 
         override func run() throws {
-            var command: [String] = [
+            let baseCommand: [String] = [
                 "xcrun",
                 "xcodebuild",
                 "-create-xcframework"
@@ -24,6 +24,9 @@ extension BuildPipeline {
 
             let fManager = FileManager.default
 
+            var commands: [[String]] = []
+            var frameworks: [String: [String]] = [:]
+            
             for path in paths {
                 let url = URL(fileURLWithPath: path, isDirectory: true)
 
@@ -37,27 +40,41 @@ extension BuildPipeline {
                 let frameworkExtension = "framework"
 
                 while let url = enumerator?.nextObject() as? URL {
-                    if url.pathExtension == frameworkExtension && url.deletingPathExtension().lastPathComponent != packageName {
+                    let frameworkName = url.deletingPathExtension().lastPathComponent
+                    
+                    if url.pathExtension == frameworkExtension && frameworkName != packageName {
                         if let framework = try? url.resourceValues(forKeys: Set(keys)).canonicalPath {
-                            command.append("-framework")
-                            command.append(framework)
+                            frameworks[frameworkName, default: []].append(framework)
                         }
                     }
                 }
             }
+            
+            for (name, paths) in frameworks {
+                var command = baseCommand
 
-            command.append("-output")
-            command.append("\(buildConfiguration.xcFrameworksOutputPath)/\(packageName).xcframework")
+                for path in paths {
+                    command.append("-framework")
+                    command.append(path)
+                }
+
+                command.append("-output")
+                command.append("\(buildConfiguration.xcFrameworksOutputPath)/\(name).xcframework")
+                
+                commands.append(command)
+            }
 
             try? fManager.removeItem(at: buildConfiguration.xcFrameworksOutputPath.asURL)
 
-            let process = Process(arguments: command,
-                                  outputRedirection: .pretty)
-            try process.launch()
-            try process.waitUntilExit()
+            for command in commands {
+                let process = Process(arguments: command,
+                                      outputRedirection: .pretty)
+                try process.launch()
+                try process.waitUntilExit()
 
-            if case .terminated(let errorCode) = process.result?.exitStatus, errorCode != 0 {
-                throw "Unable to create XCFramework for \(packageName) pacakge"
+                if case .terminated(let errorCode) = process.result?.exitStatus, errorCode != 0 {
+                    throw "Unable to create XCFramework for \(packageName) pacakge"
+                }
             }
         }
     }

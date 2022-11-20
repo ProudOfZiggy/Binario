@@ -11,7 +11,7 @@ import TSCBasic
 
 class PackageChecksumEvaluator {
 
-    func evaluateChecksum(package: Package) throws -> PackageChecksum? {
+    func evaluateChecksum(package: SwiftPackage) throws -> PackageChecksum? {
         guard let input = try? FileHandle(forReadingFrom: package.resolvedPath.asURL) else {
             throw "File not found: \(package.resolvedPath)"
         }
@@ -31,7 +31,7 @@ class PackageChecksumEvaluator {
     }
 }
 
-extension Package {
+extension SwiftPackage {
 
     var resolvedChecksum: PackageChecksum? {
         get throws {

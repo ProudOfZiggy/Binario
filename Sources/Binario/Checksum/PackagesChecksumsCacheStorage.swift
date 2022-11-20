@@ -54,10 +54,10 @@ class PackagesChecksumsCacheStorage {
         return url
     }
     
-    func migrateToInPackageStorage(packages: [Package]) {
+    func migrateToInPackageStorage(packages: [SwiftPackage]) {
         guard let checksums = read() else { return }
         
-        var packagesHash: [String: Package] = [:]
+        var packagesHash: [String: SwiftPackage] = [:]
         packages.forEach { packagesHash[$0.name] = $0 }
         
         for checksum in checksums {

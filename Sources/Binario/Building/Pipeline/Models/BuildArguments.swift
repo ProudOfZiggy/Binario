@@ -25,8 +25,7 @@ class BuildCommandsBuilder {
     private func defaultArguments(for platform: Platform) -> [String] {
         ["xcrun",
          "xcodebuild",
-         "-project", "\(buildConfiguration.xcodeproj)",
-         "-scheme", "\(buildConfiguration.packageName)-Package",
+         "-scheme", "\(buildConfiguration.packageName)",
          "-configuration", "Release",
          "-archivePath", "\(buildConfiguration.archivesPath)/Release-\(platform.rawValue)",
          "-destination", platform.destination,

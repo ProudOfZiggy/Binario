@@ -23,9 +23,24 @@ extension BuildPipeline {
             let paths = ["iphoneos", "iphonesimulator"].map { "\(buildConfiguration.buildDirectory)/Release-\($0)" }
 
             let fManager = FileManager.default
-
+            
+            for path in paths {
+                let enumerator = filesEnumerator(for: path)
+                
+                let objectExtension = "o"
+                
+                while let url = enumerator?.nextObject() as? URL {
+                    let objectName = url.deletingPathExtension().lastPathComponent
+                    
+                    if url.pathExtension == objectExtension && objectName != packageName {
+                        try? convert(object: objectName, at: AbsolutePath(path))
+                    }
+                }
+            }
+            
             var commands: [[String]] = []
             var frameworks: [String: [String]] = [:]
+            var libraries: [String: [String]] = [:]
             
             for path in paths {
                 let url = URL(fileURLWithPath: path, isDirectory: true)
@@ -38,13 +53,19 @@ extension BuildPipeline {
                                                      errorHandler: nil)
 
                 let frameworkExtension = "framework"
+                let libraryExtension = "a"
 
                 while let url = enumerator?.nextObject() as? URL {
-                    let frameworkName = url.deletingPathExtension().lastPathComponent
+                    let fileName = url.deletingPathExtension().lastPathComponent
                     
-                    if url.pathExtension == frameworkExtension && frameworkName != packageName {
-                        if let framework = try? url.resourceValues(forKeys: Set(keys)).canonicalPath {
-                            frameworks[frameworkName, default: []].append(framework)
+                    if fileName != packageName {
+                        if let file = try? url.resourceValues(forKeys: Set(keys)).canonicalPath {
+                            if url.pathExtension == frameworkExtension {
+                                frameworks[fileName, default: []].append(file)
+                            }
+                            if url.pathExtension == libraryExtension {
+                                libraries[fileName, default: []].append(file)
+                            }
                         }
                     }
                 }
@@ -55,6 +76,20 @@ extension BuildPipeline {
 
                 for path in paths {
                     command.append("-framework")
+                    command.append(path)
+                }
+
+                command.append("-output")
+                command.append("\(buildConfiguration.xcFrameworksOutputPath)/\(name).xcframework")
+                
+                commands.append(command)
+            }
+            
+            for (name, paths) in libraries {
+                var command = baseCommand
+
+                for path in paths {
+                    command.append("-library")
                     command.append(path)
                 }
 
@@ -76,6 +111,31 @@ extension BuildPipeline {
                     throw "Unable to create XCFramework for \(packageName) pacakge"
                 }
             }
+        }
+        
+        private func convert(object: String, to staticName: String? = nil, at path: AbsolutePath) throws {
+            let staticName = staticName ?? object
+            
+            let command = [
+                "ar", "-crs", "\(staticName).a", "\(object).o"
+            ]
+            let process = Process(arguments: command,
+                                  workingDirectory: path,
+                                  outputRedirection: .pretty)
+            
+            try process.launch()
+            try process.waitUntilExit()
+        }
+        
+        private func filesEnumerator(for path: String) -> FileManager.DirectoryEnumerator? {
+            let url = URL(fileURLWithPath: path, isDirectory: true)
+
+            let keys: [URLResourceKey] = [.canonicalPathKey]
+
+            return FileManager.default.enumerator(at: url,
+                                                  includingPropertiesForKeys: keys,
+                                                  options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants],
+                                                  errorHandler: nil)
         }
     }
 }

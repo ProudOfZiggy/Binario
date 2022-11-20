@@ -10,6 +10,7 @@ import ArgumentParser
 import PackageModel
 
 struct ResolveCommand: ParsableCommand {
+    
     public static let configuration = CommandConfiguration(commandName: "resolve")
 
     @Option(name: .long, help: "Directory with packages containing sources.")
@@ -40,7 +41,7 @@ struct ResolveCommand: ParsableCommand {
             }
             
             // Extract all packages
-            let packages: [Package] = .init(packagesPath: packagesPath)
+            let packages: [SwiftPackage] = .init(dependenciesPath: packagesPath)
 
             if packages.isEmpty {
                 print("No packages at \(packagesPath.canonicalPath ?? "")")
@@ -108,8 +109,8 @@ struct ResolveCommand: ParsableCommand {
         }
     }
 
-    private func resolve(packages: [Package]) throws -> [Package] {
-        var resolvedPackages: [Package] = []
+    private func resolve(packages: [SwiftPackage]) throws -> [SwiftPackage] {
+        var resolvedPackages: [SwiftPackage] = []
 
         for package in packages {
             print("Resolving \(package.name)")
@@ -125,13 +126,13 @@ struct ResolveCommand: ParsableCommand {
         return resolvedPackages
     }
 
-    private func packagesToBuild(packages: [Package]) -> [Package] {
+    private func packagesToBuild(packages: [SwiftPackage]) -> [SwiftPackage] {
         let checksumsCache = Set(packages.compactMap { PackageChecksumCache(package: $0).read() })
 
         if checksumsCache.isEmpty { return packages }
 
-        var packagesToBuild: [Package] = []
-        let binaryPackages: [BinaryPackage] = .init(packagesPath: outputPath).filter { $0.isValid }
+        var packagesToBuild: [SwiftPackage] = []
+        let binaryPackages: [BinarySwiftPackage] = .init(dependenciesPath: outputPath).filter { $0.isValid }
         let binaryPackageNames = Set(binaryPackages.map { $0.name })
 
         for package in packages {
@@ -152,8 +153,8 @@ struct ResolveCommand: ParsableCommand {
         return packagesToBuild
     }
 
-    private func build(packages: [Package], platforms: [Platform]) -> [Package] {
-        var builtPackages: [Package] = []
+    private func build(packages: [SwiftPackage], platforms: [Platform]) -> [SwiftPackage] {
+        var builtPackages: [SwiftPackage] = []
 
         for package in packages {
             let configuration = PackageBuildConfiguration(package: package, platforms: platforms)
@@ -171,8 +172,8 @@ struct ResolveCommand: ParsableCommand {
         return builtPackages
     }
 
-    private func generateBinaries(packages: [Package]) -> [Package] {
-        var generatedPackages: [Package] = []
+    private func generateBinaries(packages: [SwiftPackage]) -> [SwiftPackage] {
+        var generatedPackages: [SwiftPackage] = []
 
         for package in packages {
             let configuration = PackageBuildConfiguration(package: package, platforms: [])
@@ -194,8 +195,8 @@ struct ResolveCommand: ParsableCommand {
         return generatedPackages
     }
 
-    private func cacheChecksum(packages: [Package]) -> [Package] {
-        var cachedPackages: [Package] = []
+    private func cacheChecksum(packages: [SwiftPackage]) -> [SwiftPackage] {
+        var cachedPackages: [SwiftPackage] = []
 
         for package in packages {
             if let checksum = try? package.resolvedChecksum {
@@ -208,7 +209,7 @@ struct ResolveCommand: ParsableCommand {
         return cachedPackages
     }
 
-    private func printFailureReason(_ reason: String, packages: [Package]) {
+    private func printFailureReason(_ reason: String, packages: [SwiftPackage]) {
         if packages.isEmpty { return }
 
         print(reason)

@@ -15,7 +15,7 @@ struct PackagesListCommand: ParsableCommand {
     var path: String
 
     mutating func run() throws {
-        let allPackages: [Package] = .init(packagesPath: path)
+        let allPackages: [SwiftPackage] = .init(dependenciesPath: path)
 
         if allPackages.isEmpty {
             print("No packages at \(path.canonicalPath ?? "")")

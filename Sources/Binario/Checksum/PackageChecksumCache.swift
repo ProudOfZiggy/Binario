@@ -8,7 +8,7 @@
 import Foundation
 
 class PackageChecksumCache {
-    private let package: Package
+    private let package: SwiftPackage
     private let fileName = ".package.checksum.binario"
     
     private var filePath: URL { package.absolutePath.appending(component: fileName).asURL }
@@ -17,7 +17,7 @@ class PackageChecksumCache {
         !FileManager.default.fileExists(atPath: filePath.absoluteString)
     }
     
-    init(package: Package) {
+    init(package: SwiftPackage) {
         self.package = package
     }
     
@@ -42,7 +42,7 @@ class PackageChecksumCache {
         try? FileManager.default.removeItem(at: filePath)
     }
     
-    static func clean(packages: [Package]) {
+    static func clean(packages: [SwiftPackage]) {
         packages.forEach {
             let cache = PackageChecksumCache(package: $0)
             cache.clean()

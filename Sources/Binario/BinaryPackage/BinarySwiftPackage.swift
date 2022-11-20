@@ -1,5 +1,5 @@
 //
-//  BinaryPackage.swift
+//  BinarySwiftPackage.swift
 //  
 //
 //  Created by Silvester on 03.08.2022.
@@ -7,10 +7,10 @@
 
 import Foundation
 
-class BinaryPackage: Package {
+class BinarySwiftPackage: SwiftPackage {
     override var binaryName: String { name }
 
-    var hasXCFrameworks: Bool {
+    var hasFrameworks: Bool {
         guard let enumerator = FileManager.default.enumerator(at: absolutePath.asURL,
                                                               includingPropertiesForKeys: nil,
                                                               options: [.skipsSubdirectoryDescendants,
@@ -23,5 +23,5 @@ class BinaryPackage: Package {
         return false
     }
 
-    var isValid: Bool { hasXCFrameworks }
+    var isValid: Bool { hasFrameworks }
 }

@@ -10,7 +10,7 @@ import Foundation
 
 class PackagesResolver {
 
-    func resolve(package: Package) throws {
+    func resolve(package: SwiftPackage) throws {
         try? FileManager.default.removeItem(at: package.resolvedPath.asURL)
 
         let process = Process(arguments: ["swift", "package", "resolve"],
@@ -25,7 +25,7 @@ class PackagesResolver {
     }
 }
 
-extension Package {
+extension SwiftPackage {
 
     func resolve() throws {
         let resolver = PackagesResolver()

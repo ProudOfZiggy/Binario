@@ -20,7 +20,7 @@ extension ChecksumCommand {
         var packagePath: String = "."
         
         mutating func run() throws {
-            guard let package = Package(path: packagePath) else {
+            guard let package = SwiftPackage(path: packagePath) else {
                 throw "No package found at \(packagePath.canonicalPath ?? "")"
             }
             

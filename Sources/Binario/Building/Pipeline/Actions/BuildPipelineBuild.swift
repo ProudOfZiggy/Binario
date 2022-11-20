@@ -18,6 +18,7 @@ extension BuildPipeline {
             
             for command in commands {
                 let process = Process(arguments: command.arguments,
+                                      workingDirectory: buildConfiguration.package.absolutePath,
                                       outputRedirection: .pretty)
                 try process.launch()
                 try process.waitUntilExit()

@@ -9,10 +9,10 @@ import Foundation
 import TSCBasic
 
 struct PackageBuildConfiguration {
-    let package: Package
+    let package: SwiftPackage
     let platforms: [Platform]
     
-    init(package: Package, platforms: [Platform] = []) {
+    init(package: SwiftPackage, platforms: [Platform] = []) {
         self.package = package
         self.platforms = platforms
     }

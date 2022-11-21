@@ -9,12 +9,9 @@ import TSCBasic
 import Foundation
 
 class SwiftPackage: Dependency {
-    var binaryName: String { absolutePath.basename + "Binary" }
-
     var manifestPath: AbsolutePath { absolutePath.appending(component: "Package.swift") }
     var resolvedPath: AbsolutePath { absolutePath.appending(component: "Package.resolved") }
 
-    var hasResolvedCache: Bool { FileManager.default.fileExists(atPath: resolvedPath.pathString) }
     var hasManifest: Bool { FileManager.default.fileExists(atPath: manifestPath.pathString) }
 
     convenience init?(path: String) {
@@ -33,6 +30,13 @@ class SwiftPackage: Dependency {
         super.init(absolutePath: absolutePath)
         
         if !FileManager.default.fileExists(atPath: manifestPath.pathString) { return nil }
+        
+        configuration.checksumSource = configuration.checksumSource ?? resolvedPath
+    }
+    
+    override func resolve() throws {
+        let resolver = PackagesResolver()
+        try resolver.resolve(package: self)
     }
 }
 
@@ -43,16 +47,5 @@ extension SwiftPackage: CustomStringConvertible, CustomDebugStringConvertible {
 
     public var debugDescription: String {
         return "\nName: \(name)\nPath: \(absolutePath)\n"
-    }
-}
-
-extension SwiftPackage: Hashable {
-    
-    static func == (lhs: SwiftPackage, rhs: SwiftPackage) -> Bool {
-        return lhs.hashValue == rhs.hashValue
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(absolutePath)
     }
 }

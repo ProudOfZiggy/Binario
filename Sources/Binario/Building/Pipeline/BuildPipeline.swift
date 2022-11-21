@@ -17,20 +17,18 @@ class BuildPipeline {
 
     func run() throws {
         let parser = BuildPipelineParser()
-        let actions = parser.parse(packagePath: buildConfiguration.package.absolutePath)
+        let actions = parser.parse(packagePath: buildConfiguration.dependency.absolutePath)
 
         for action in actions {
             switch action {
             case .clean: try clean()
             case .resolve: try resolve()
-            case .generate: try generateXCProject()
             case .build: try build()
             case .createXCFrameworks: try createXCFrameworks()
             case .script(let path): try runScript(path: path)
             case .defaultPipeline:
                 try clean()
                 try resolve()
-                try generateXCProject()
                 try build()
                 try createXCFrameworks()
             }
@@ -44,11 +42,6 @@ class BuildPipeline {
 
     private func resolve() throws {
         let action = Resolve(buildConfiguration: buildConfiguration)
-        try action.run()
-    }
-
-    private func generateXCProject() throws {
-        let action = GenerateXCProject(buildConfiguration: buildConfiguration)
         try action.run()
     }
 

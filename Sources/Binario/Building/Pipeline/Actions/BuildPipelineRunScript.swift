@@ -23,7 +23,7 @@ extension BuildPipeline {
             if scriptPath.isEmpty { return }
 
             let script = AbsolutePath(scriptPath,
-                                      relativeTo: buildConfiguration.package.absolutePath)
+                                      relativeTo: buildConfiguration.dependency.absolutePath)
             let process = Process(arguments: ["sh", script.basename],
                                   workingDirectory: script.parentDirectory,
                                   outputRedirection: .pretty)

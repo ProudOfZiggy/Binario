@@ -41,7 +41,7 @@ struct ResolveCommand: ParsableCommand {
             }
             
             // Extract all packages
-            let packages: [SwiftPackage] = .init(dependenciesPath: packagesPath)
+            let packages: [Dependency] = .init(dependenciesPath: packagesPath)
 
             if packages.isEmpty {
                 print("No packages at \(packagesPath.canonicalPath ?? "")")
@@ -52,15 +52,15 @@ struct ResolveCommand: ParsableCommand {
             
             if ignoreCache {
                 oldStorage.clean()
-                PackageChecksumCache.clean(packages: packages)
+                PackageChecksumCache.clean(dependencies: packages)
             } else {
-                oldStorage.migrateToInPackageStorage(packages: packages)
+                oldStorage.migrateToInPackageStorage(dependencies: packages)
             }
             
             print("Found packages: \(packages)")
 
             // Attempt to resolve all packages
-            let resolvedPackages = try resolve(packages: packages)
+            let resolvedPackages = try resolve(dependencies: packages)
 
             if resolvedPackages.isEmpty {
                 print("No resolved packages produced at \(packagesPath.canonicalPath ?? "")")
@@ -68,7 +68,7 @@ struct ResolveCommand: ParsableCommand {
             }
 
             // Figuring out what packages need to be build or re-build
-            let packagesToBuild = packagesToBuild(packages: resolvedPackages)
+            let packagesToBuild = packagesToBuild(dependencies: resolvedPackages)
 
             if packagesToBuild.isEmpty {
                 print("All binaries up to date.")
@@ -76,14 +76,14 @@ struct ResolveCommand: ParsableCommand {
             }
 
             // Building packages that need to be build
-            let builtPackages = build(packages: packagesToBuild, platforms: platforms)
+            let builtPackages = build(dependencies: packagesToBuild, platforms: platforms)
 
             // Generating binaries from built packages
-            let generatedPackages = generateBinaries(packages: builtPackages)
+            let generatedPackages = generateBinaries(dependencies: builtPackages)
 
             // Caching newly build/generated packages and re-caching packages that no need to build
             let packagesToCache = Set(resolvedPackages).symmetricDifference(packagesToBuild).union(generatedPackages)
-            let cachedPackages = cacheChecksum(packages: Array(packagesToCache))
+            let cachedPackages = cacheChecksum(dependencies: Array(packagesToCache))
 
             // Segregating packages into arrays by failure reason
             let failedToBuild = Set(packagesToBuild).symmetricDifference(builtPackages)
@@ -94,9 +94,9 @@ struct ResolveCommand: ParsableCommand {
 
             if hasErrors {
                 print("Finished with errors.")
-                printFailureReason("Unable to build:", packages: Array(failedToBuild))
-                printFailureReason("Unable to generate binaries:", packages: Array(failedToGenerate))
-                printFailureReason("Unable to cache:", packages: Array(failedToCache))
+                printFailureReason("Unable to build:", dependencies: Array(failedToBuild))
+                printFailureReason("Unable to generate binaries:", dependencies: Array(failedToGenerate))
+                printFailureReason("Unable to cache:", dependencies: Array(failedToCache))
                 print("Check reasons in logs")
                 return
             }
@@ -109,62 +109,61 @@ struct ResolveCommand: ParsableCommand {
         }
     }
 
-    private func resolve(packages: [SwiftPackage]) throws -> [SwiftPackage] {
-        var resolvedPackages: [SwiftPackage] = []
+    private func resolve(dependencies: [Dependency]) throws -> [Dependency] {
+        var resolvedPackages: [Dependency] = []
 
-        for package in packages {
+        for package in dependencies {
             print("Resolving \(package.name)")
             try package.resolve()
 
-            // Need to support packages w/o dependencies (e.g. no generated Package.resolved)
-            if package.hasResolvedCache {
+            if package.hasChecksumSource {
                 resolvedPackages.append(package)
             } else {
-                print("Skipping \(package.name) package. No Package.resolved found.")
+                print("Skipping \(package.name) package. No files for checksum evaluation found.")
             }
         }
         return resolvedPackages
     }
 
-    private func packagesToBuild(packages: [SwiftPackage]) -> [SwiftPackage] {
-        let checksumsCache = Set(packages.compactMap { PackageChecksumCache(package: $0).read() })
+    private func packagesToBuild(dependencies: [Dependency]) -> [Dependency] {
+        let checksumsCache = Set(dependencies.compactMap { PackageChecksumCache(dependency: $0).read() })
 
-        if checksumsCache.isEmpty { return packages }
+        if checksumsCache.isEmpty { return dependencies }
 
-        var packagesToBuild: [SwiftPackage] = []
+        var packagesToBuild: [Dependency] = []
         let binaryPackages: [BinarySwiftPackage] = .init(dependenciesPath: outputPath).filter { $0.isValid }
         let binaryPackageNames = Set(binaryPackages.map { $0.name })
 
-        for package in packages {
-            if !binaryPackageNames.contains(package.binaryName) {
-                packagesToBuild.append(package)
+        for dependency in dependencies {
+            if !binaryPackageNames.contains(dependency.binaryName) {
+                packagesToBuild.append(dependency)
                 continue
             }
 
-            guard let checksum = try? package.resolvedChecksum else {
-                packagesToBuild.append(package)
+            guard let checksum = try? dependency.resolvedChecksum else {
+                packagesToBuild.append(dependency)
                 continue
             }
 
             if !checksumsCache.contains(checksum) {
-                packagesToBuild.append(package)
+                packagesToBuild.append(dependency)
             }
         }
         return packagesToBuild
     }
 
-    private func build(packages: [SwiftPackage], platforms: [Platform]) -> [SwiftPackage] {
-        var builtPackages: [SwiftPackage] = []
+    private func build(dependencies: [Dependency], platforms: [Platform]) -> [Dependency] {
+        var builtPackages: [Dependency] = []
 
-        for package in packages {
-            let configuration = PackageBuildConfiguration(package: package, platforms: platforms)
+        for dependency in dependencies {
+            let configuration = PackageBuildConfiguration(dependency: dependency, platforms: platforms)
             let pipeline = BuildPipeline(buildConfiguration: configuration)
 
             do {
                 try pipeline.run()
-                builtPackages.append(package)
+                builtPackages.append(dependency)
             } catch let error {
-                print("Unable to build package \"\(package)\"")
+                print("Unable to build package \"\(dependency)\"")
                 print("Reason: \(error.localizedDescription)")
                 continue
             }
@@ -172,22 +171,22 @@ struct ResolveCommand: ParsableCommand {
         return builtPackages
     }
 
-    private func generateBinaries(packages: [SwiftPackage]) -> [SwiftPackage] {
-        var generatedPackages: [SwiftPackage] = []
+    private func generateBinaries(dependencies: [Dependency]) -> [Dependency] {
+        var generatedPackages: [Dependency] = []
 
-        for package in packages {
-            let configuration = PackageBuildConfiguration(package: package, platforms: [])
+        for dependency in dependencies {
+            let configuration = PackageBuildConfiguration(dependency: dependency, platforms: [])
 
-            let generator = BinaryPackageGenerator(packageName: package.name,
+            let generator = BinaryPackageGenerator(packageName: dependency.name,
                                                    binariesPath: outputPath,
                                                    frameworksPath: configuration.xcFrameworksOutputPath.pathString)
 
 
             do {
                 try generator.gerenate()
-                generatedPackages.append(package)
+                generatedPackages.append(dependency)
             } catch let error {
-                print("Unable to generate pinary package for \"\(package)\"")
+                print("Unable to generate pinary package for \"\(dependency)\"")
                 print("Reason: \(error.localizedDescription)")
                 continue
             }
@@ -195,27 +194,27 @@ struct ResolveCommand: ParsableCommand {
         return generatedPackages
     }
 
-    private func cacheChecksum(packages: [SwiftPackage]) -> [SwiftPackage] {
-        var cachedPackages: [SwiftPackage] = []
+    private func cacheChecksum(dependencies: [Dependency]) -> [Dependency] {
+        var cachedPackages: [Dependency] = []
 
-        for package in packages {
-            if let checksum = try? package.resolvedChecksum {
-                let cache = PackageChecksumCache(package: package)
+        for dependency in dependencies {
+            if let checksum = try? dependency.resolvedChecksum {
+                let cache = PackageChecksumCache(dependency: dependency)
                 cache.write(checksum: checksum)
-                cachedPackages.append(package)
+                cachedPackages.append(dependency)
             }
         }
 
         return cachedPackages
     }
 
-    private func printFailureReason(_ reason: String, packages: [SwiftPackage]) {
-        if packages.isEmpty { return }
+    private func printFailureReason(_ reason: String, dependencies: [Dependency]) {
+        if dependencies.isEmpty { return }
 
         print(reason)
 
-        for package in packages {
-            print("\(package.name) at path: \(package.absolutePath)")
+        for dependency in dependencies {
+            print("\(dependency.name) at path: \(dependency.absolutePath)")
         }
     }
 }

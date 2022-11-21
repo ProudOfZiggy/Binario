@@ -23,9 +23,9 @@ extension ChecksumCommand {
 
                 let evaluator = PackageChecksumEvaluator()
 
-                if let checksum = try evaluator.evaluateChecksum(package: package) {
+                if let checksum = try evaluator.evaluateChecksum(dependency: package) {
                     print("\(packagePath.canonicalPath ?? "") package checksum - \(checksum.value)")
-                    let cache = PackageChecksumCache(package: package)
+                    let cache = PackageChecksumCache(dependency: package)
                     cache.write(checksum: checksum)
                 } else {
                     print("Unable to evaluate checksum for package \(package.name)")

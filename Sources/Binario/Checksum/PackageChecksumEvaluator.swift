@@ -11,9 +11,13 @@ import TSCBasic
 
 class PackageChecksumEvaluator {
 
-    func evaluateChecksum(package: SwiftPackage) throws -> PackageChecksum? {
-        guard let input = try? FileHandle(forReadingFrom: package.resolvedPath.asURL) else {
-            throw "File not found: \(package.resolvedPath)"
+    func evaluateChecksum(dependency: Dependency) throws -> PackageChecksum? {
+        guard let checksumSource = dependency.configuration.checksumSource else {
+            return PackageChecksum(packageName: dependency.name, value: "-")
+        }
+        
+        guard let input = try? FileHandle(forReadingFrom: checksumSource.asURL) else {
+            throw "File not found: \(checksumSource)"
         }
 
         var hasher = CryptoKit.SHA256()
@@ -27,16 +31,16 @@ class PackageChecksumEvaluator {
             hasher.update(data: data)
         }
         let checksum = hasher.finalize().compactMap { String(format: "%02x", $0) }.joined()
-        return PackageChecksum(packageName: package.name, value: checksum)
+        return PackageChecksum(packageName: dependency.name, value: checksum)
     }
 }
 
-extension SwiftPackage {
+extension Dependency {
 
     var resolvedChecksum: PackageChecksum? {
         get throws {
             let eval = PackageChecksumEvaluator()
-            return try eval.evaluateChecksum(package: self)
+            return try eval.evaluateChecksum(dependency: self)
         }
     }
 }

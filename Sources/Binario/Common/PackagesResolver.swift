@@ -10,6 +10,10 @@ import Foundation
 
 class PackagesResolver {
 
+    func resolve(dependency: Dependency) throws {
+        try dependency.resolve()
+    }
+    
     func resolve(package: SwiftPackage) throws {
         try? FileManager.default.removeItem(at: package.resolvedPath.asURL)
 
@@ -22,13 +26,5 @@ class PackagesResolver {
         if case .terminated(let errorCode) = process.result?.exitStatus, errorCode != 0 {
             throw "Unable to resove package - \(package.name)"
         }
-    }
-}
-
-extension SwiftPackage {
-
-    func resolve() throws {
-        let resolver = PackagesResolver()
-        try resolver.resolve(package: self)
     }
 }

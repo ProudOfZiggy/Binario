@@ -8,24 +8,24 @@
 import Foundation
 
 class PackageChecksumCache {
-    private let package: SwiftPackage
+    private let dependency: Dependency
     private let fileName = ".package.checksum.binario"
     
-    private var filePath: URL { package.absolutePath.appending(component: fileName).asURL }
+    private var filePath: URL { dependency.absolutePath.appending(component: fileName).asURL }
     
     var isEmpty: Bool {
         !FileManager.default.fileExists(atPath: filePath.absoluteString)
     }
     
-    init(package: SwiftPackage) {
-        self.package = package
+    init(dependency: Dependency) {
+        self.dependency = dependency
     }
     
     func read() -> PackageChecksum? {
         guard let checksum = try? String(contentsOf: filePath, encoding: .utf8) else {
             return nil
         }
-        return PackageChecksum(packageName: package.name, value: checksum)
+        return PackageChecksum(packageName: dependency.name, value: checksum)
     }
     
     @discardableResult
@@ -42,9 +42,9 @@ class PackageChecksumCache {
         try? FileManager.default.removeItem(at: filePath)
     }
     
-    static func clean(packages: [SwiftPackage]) {
-        packages.forEach {
-            let cache = PackageChecksumCache(package: $0)
+    static func clean(dependencies: [Dependency]) {
+        dependencies.forEach {
+            let cache = PackageChecksumCache(dependency: $0)
             cache.clean()
         }
     }

@@ -39,7 +39,7 @@ private extension BuildPiplelineCommand {
                     return
                 }
 
-                let config = PackageBuildConfiguration(package: package, platforms: platforms)
+                let config = PackageBuildConfiguration(dependency: package, platforms: platforms)
                 let action = BuildPipeline.Build(buildConfiguration: config)
                 try action.run()
             } catch let error {
@@ -62,7 +62,7 @@ private extension BuildPiplelineCommand {
                     throw "No package found at \(packagePath.canonicalPath ?? "")"
                 }
 
-                let config = PackageBuildConfiguration(package: package)
+                let config = PackageBuildConfiguration(dependency: package)
                 let action = BuildPipeline.Clean(buildConfiguration: config)
                 try action.run()
             } catch let error {
@@ -86,7 +86,7 @@ private extension BuildPiplelineCommand {
                     throw "No package found at \(packagePath.canonicalPath ?? "")"
                 }
 
-                let config = PackageBuildConfiguration(package: package)
+                let config = PackageBuildConfiguration(dependency: package)
                 let action = BuildPipeline.CreateXCFramework(buildConfiguration: config)
                 try action.run()
             } catch let error {
@@ -110,7 +110,7 @@ private extension BuildPiplelineCommand {
                     throw "No package found at \(packagePath.canonicalPath ?? "")"
                 }
 
-                let config = PackageBuildConfiguration(package: package)
+                let config = PackageBuildConfiguration(dependency: package)
                 let action = BuildPipeline.GenerateXCProject(buildConfiguration: config)
                 try action.run()
             } catch let error {

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import TSCBasic
 
 class BinarySwiftPackage: SwiftPackage {
     override var binaryName: String { name }
@@ -24,4 +25,10 @@ class BinarySwiftPackage: SwiftPackage {
     }
 
     var isValid: Bool { hasFrameworks }
+    
+    override init?(absolutePath: AbsolutePath) {
+        super.init(absolutePath: absolutePath)
+        
+        if !isValid { return nil }
+    }
 }

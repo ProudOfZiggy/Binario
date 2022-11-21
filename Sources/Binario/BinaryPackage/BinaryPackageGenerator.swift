@@ -65,9 +65,9 @@ class BinaryPackageGenerator {
 
         let targets = [binaryPackageName] + frameworks.map { $0.deletingPathExtension().lastPathComponent }
         
-        let product = ProductDescription(name: binaryPackageName,
-                                         type: .library(.automatic),
-                                         targets: targets)
+        let product = try ProductDescription(name: binaryPackageName,
+                                             type: .library(.automatic),
+                                             targets: targets)
 
         let mainTarget = try TargetDescription(name: binaryPackageName)
         let binaryTargets = try frameworks.map {
@@ -76,12 +76,12 @@ class BinaryPackageGenerator {
                                   type: .binary)
         }
 
-        let manifest = Manifest(name: binaryPackageName,
+        let manifest = Manifest(displayName: binaryPackageName,
                                 path: .init("/"),
-                                packageKind: .local,
+                                packageKind: .localSourceControl(.init("/")),
                                 packageLocation: "/",
                                 platforms: [],
-                                toolsVersion: .currentToolsVersion,
+                                toolsVersion: .current,
                                 dependencies: [],
                                 products: [product],
                                 targets: [mainTarget] + binaryTargets)

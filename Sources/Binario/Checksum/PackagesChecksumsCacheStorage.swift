@@ -54,16 +54,16 @@ class PackagesChecksumsCacheStorage {
         return url
     }
     
-    func migrateToInPackageStorage(packages: [SwiftPackage]) {
+    func migrateToInPackageStorage(dependencies: [Dependency]) {
         guard let checksums = read() else { return }
         
-        var packagesHash: [String: SwiftPackage] = [:]
-        packages.forEach { packagesHash[$0.name] = $0 }
+        var packagesHash: [String: Dependency] = [:]
+        dependencies.forEach { packagesHash[$0.name] = $0 }
         
         for checksum in checksums {
             guard let package = packagesHash[checksum.packageName] else { continue }
             
-            let cache = PackageChecksumCache(package: package)
+            let cache = PackageChecksumCache(dependency: package)
             cache.write(checksum: checksum)
         }
         

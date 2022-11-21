@@ -9,17 +9,17 @@ import Foundation
 import TSCBasic
 
 struct PackageBuildConfiguration {
-    let package: SwiftPackage
+    let dependency: Dependency
     let platforms: [Platform]
     
-    init(package: SwiftPackage, platforms: [Platform] = []) {
-        self.package = package
+    init(dependency: Dependency, platforms: [Platform] = []) {
+        self.dependency = dependency
         self.platforms = platforms
     }
     
-    var packageName: String { package.name }
-    var buildDirectory: AbsolutePath { package.absolutePath.appending(component: ".build") }
+    var packageName: String { dependency.name }
+    var buildDirectory: AbsolutePath { dependency.absolutePath.appending(component: ".build") }
     var archivesPath: AbsolutePath { buildDirectory.appending(component: "archives") }
-    var xcodeproj: AbsolutePath { package.absolutePath.appending(component: "\(packageName).xcodeproj") }
+    var xcodeproj: AbsolutePath { dependency.absolutePath.appending(component: "\(packageName).xcodeproj") }
     var xcFrameworksOutputPath: AbsolutePath { buildDirectory.appending(component: "xcframeworks") }
 }

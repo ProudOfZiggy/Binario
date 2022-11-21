@@ -24,7 +24,7 @@ extension ChecksumCommand {
                 throw "No package found at \(packagePath.canonicalPath ?? "")"
             }
             
-            let cache = PackageChecksumCache(package: package)
+            let cache = PackageChecksumCache(dependency: package)
             cache.write(checksum: PackageChecksum(packageName: package.name, value: checksum))
         }
     }

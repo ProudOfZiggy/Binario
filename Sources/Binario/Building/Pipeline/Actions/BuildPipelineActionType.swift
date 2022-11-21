@@ -12,7 +12,6 @@ extension BuildPipeline {
     enum Action {
         case clean
         case resolve
-        case generate
         case build
         case createXCFrameworks
         case defaultPipeline
@@ -22,7 +21,6 @@ extension BuildPipeline {
             switch string {
             case "clean": self = .clean
             case "resolve": self = .resolve
-            case "generate": self = .generate
             case "build": self = .build
             case "create-xcframeworks": self = .createXCFrameworks
             case "default-pipeline": self = .defaultPipeline

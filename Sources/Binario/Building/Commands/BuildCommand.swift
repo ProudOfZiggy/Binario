@@ -27,7 +27,7 @@ private struct Build: ParsableCommand {
                 throw "No package found at \(packagePath.canonicalPath ?? "")"
             }
 
-            let config = PackageBuildConfiguration(package: package)
+            let config = PackageBuildConfiguration(dependency: package)
             let pipeline = BuildPipeline(buildConfiguration: config)
             try pipeline.run()
         } catch let error {

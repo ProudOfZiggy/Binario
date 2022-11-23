@@ -177,7 +177,7 @@ struct ResolveCommand: ParsableCommand {
         for dependency in dependencies {
             let configuration = PackageBuildConfiguration(dependency: dependency, platforms: [])
 
-            let generator = BinaryPackageGenerator(packageName: dependency.name,
+            let generator = BinaryPackageGenerator(sourceDependency: dependency,
                                                    binariesPath: outputPath,
                                                    frameworksPath: configuration.xcFrameworksOutputPath.pathString)
 

@@ -10,20 +10,20 @@ import TSCBasic
 import PackageModel
 
 class BinaryPackageGenerator {
-    let packageName: String
+    let sourceDependency: Dependency
     let binariesPath: String
     let frameworksPath: String
 
-    init(packageName: String,
+    init(sourceDependency: Dependency,
          binariesPath: String,
          frameworksPath: String) {
-        self.packageName = packageName
+        self.sourceDependency = sourceDependency
         self.binariesPath = binariesPath
         self.frameworksPath = frameworksPath
     }
 
     func gerenate() throws {
-        let binaryPackageName = "\(packageName)Binary"
+        let binaryPackageName = "\(sourceDependency.name)Binary"
         let binaryPackagePath = "\(binariesPath)/\(binaryPackageName)"
         let binaryPackageFrameworksPath = binaryPackagePath
         let sourcesPath = "\(binaryPackagePath)/Sources/\(binaryPackageName)"
@@ -44,8 +44,9 @@ class BinaryPackageGenerator {
                                              errorHandler: nil)
 
         while let url = enumerator?.nextObject() as? URL {
-            if url.pathExtension == "xcframework" {
-                let name = url.lastPathComponent
+            let name = url.lastPathComponent
+            
+            if url.pathExtension == "xcframework" || sourceDependency.configuration.includeFiles.contains(name) {
                 try fManager.copyItem(at: url,
                                       to: URL(fileURLWithPath: "\(binaryPackageFrameworksPath)/\(name)",
                                               isDirectory: true))

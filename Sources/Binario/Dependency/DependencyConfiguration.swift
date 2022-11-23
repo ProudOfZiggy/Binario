@@ -12,10 +12,13 @@ struct DependencyConfiguration: Decodable {
     private var _checksumSource: String?
     var checksumSource: AbsolutePath?
     
+    private(set) var includeFiles: Set<String> = []
+    
     static var empty: DependencyConfiguration { DependencyConfiguration() }
     
     enum CodingKeys: CodingKey {
         case checksumSource
+        case includeFiles
     }
     
     private init() {}
@@ -38,5 +41,6 @@ struct DependencyConfiguration: Decodable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         _checksumSource = try? container.decodeIfPresent(String.self, forKey: .checksumSource)
+        includeFiles = (try? container.decodeIfPresent(Set<String>.self, forKey: .includeFiles)) ?? []
     }
 }

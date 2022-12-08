@@ -19,6 +19,8 @@ class Dependency {
     
     var configuration: DependencyConfiguration = .empty
     
+    var isResolved = false
+    
     convenience init?(path: String) {
         self.init(path: URL(fileURLWithPath: path, isDirectory: true))
     }
@@ -48,7 +50,9 @@ class Dependency {
         BinarySwiftPackage(path: path) ?? SwiftPackage(path: path) ?? Dependency(path: path)
     }
     
-    func resolve() throws {}
+    func resolve() throws {
+        isResolved = true
+    }
 }
 
 extension Dependency: Hashable {

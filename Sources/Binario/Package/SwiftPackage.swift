@@ -13,7 +13,7 @@ class SwiftPackage: Dependency {
     var resolvedPath: AbsolutePath { absolutePath.appending(component: "Package.resolved") }
 
     var hasManifest: Bool { FileManager.default.fileExists(atPath: manifestPath.pathString) }
-
+    
     convenience init?(path: String) {
         self.init(path: URL(fileURLWithPath: path, isDirectory: true))
     }
@@ -37,6 +37,8 @@ class SwiftPackage: Dependency {
     override func resolve() throws {
         let resolver = PackagesResolver()
         try resolver.resolve(package: self)
+        
+        isResolved = true
     }
 }
 

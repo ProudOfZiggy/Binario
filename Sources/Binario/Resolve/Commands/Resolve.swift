@@ -68,7 +68,7 @@ struct ResolveCommand: ParsableCommand {
             }
 
             // Figuring out what packages need to be build or re-build
-            let packagesToBuild = packagesToBuild(dependencies: resolvedPackages)
+            let packagesToBuild = ignoreCache ? resolvedPackages : packagesToBuild(dependencies: resolvedPackages)
 
             if packagesToBuild.isEmpty {
                 print("All binaries up to date.")

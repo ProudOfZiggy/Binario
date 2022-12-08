@@ -13,7 +13,9 @@ extension BuildPipeline {
         private let resovler = PackagesResolver()
 
         override func run() throws {
-            try resovler.resolve(dependency: buildConfiguration.dependency)
+            if buildConfiguration.dependency.isResolved { return }
+            
+            try buildConfiguration.dependency.resolve()
         }
     }
 }

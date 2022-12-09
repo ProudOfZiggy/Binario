@@ -19,11 +19,12 @@ extension BuildPipeline {
             for command in commands {
                 let process = Process(arguments: command.arguments,
                                       workingDirectory: buildConfiguration.dependency.absolutePath,
-                                      outputRedirection: .pretty)
+                                      outputRedirection: .none)
                 try process.launch()
                 try process.waitUntilExit()
 
                 if case .terminated(let errorCode) = process.result?.exitStatus, errorCode != 0 {
+                    print("FINISHED WITH ERROR CODE - \(errorCode)")
                     throw "Unable to build \(buildConfiguration.packageName)"
                 }
             }

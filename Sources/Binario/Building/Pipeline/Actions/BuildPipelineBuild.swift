@@ -25,7 +25,11 @@ extension BuildPipeline {
 
                 if case .terminated(let errorCode) = process.result?.exitStatus, errorCode != 0 {
                     print("FINISHED WITH ERROR CODE - \(errorCode)")
-                    throw "Unable to build \(buildConfiguration.packageName)"
+                    if errorCode == 65 {
+                        run()
+                    } else {
+                        throw "Unable to build \(buildConfiguration.packageName)"
+                    }
                 }
             }
         }

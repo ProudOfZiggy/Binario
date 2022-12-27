@@ -25,6 +25,7 @@ extension BuildPipeline {
             let script = AbsolutePath(scriptPath,
                                       relativeTo: buildConfiguration.dependency.absolutePath)
             let process = Process(arguments: ["sh", script.basename],
+                                  environment: buildConfiguration.scriptEnvironment,
                                   workingDirectory: script.parentDirectory,
                                   outputRedirection: .pretty)
 
@@ -36,5 +37,21 @@ extension BuildPipeline {
                 return
             }
         }
+    }
+}
+
+private extension PackageBuildConfiguration {
+    var scriptEnvironment: [String: String] {
+        var env: [String: String] = [:]
+        
+        env["DEPENDENCY_NAME"] = packageName
+        env["DEPENDENCY_BINARY_NAME"] = dependency.binaryName
+        env["DEPENDENCY_PATH"] = dependency.absolutePath.pathString
+        env["BUILD_PATH"] = buildDirectory.pathString
+        env["ARCHIVES_PATH"] = archivesPath.pathString
+        env["XCFRAMEWORKS_PATH"] = xcFrameworksOutputPath.pathString
+        env["TARGET_PLATFORMS"] = platforms.map { $0.rawValue }.joined(separator: ",")
+        
+        return env
     }
 }

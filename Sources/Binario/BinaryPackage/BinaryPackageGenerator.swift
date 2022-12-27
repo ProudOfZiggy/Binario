@@ -27,26 +27,26 @@ class BinaryPackageGenerator {
         let binaryPackagePath = "\(binariesPath)/\(binaryPackageName)"
         let binaryPackageFrameworksPath = binaryPackagePath
         let sourcesPath = "\(binaryPackagePath)/Sources/\(binaryPackageName)"
-
+        
         let fManager = FileManager.default
-
+        
         try? fManager.removeItem(atPath: binaryPackagePath)
         try fManager.createDirectory(atPath: sourcesPath,
                                      withIntermediateDirectories: true,
                                      attributes: nil)
         fManager.createFile(atPath: "\(sourcesPath)/Dummy.swift", contents: nil)
-
+        
         let frameworksURL = URL(fileURLWithPath: frameworksPath, isDirectory: true)
-
+        
         let enumerator = fManager.enumerator(at: frameworksURL,
                                              includingPropertiesForKeys: [],
                                              options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants],
                                              errorHandler: nil)
-
+        
         while let url = enumerator?.nextObject() as? URL {
             let name = url.lastPathComponent
             
-            if url.pathExtension == "xcframework" || sourceDependency.configuration.includeFiles.contains(name) {
+            if url.pathExtension == "xcframework" || sourceDependency.configuration.includeFiles.contains(name) || name == "artifacts" {
                 try fManager.copyItem(at: url,
                                       to: URL(fileURLWithPath: "\(binaryPackageFrameworksPath)/\(name)",
                                               isDirectory: true))

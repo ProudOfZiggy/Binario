@@ -20,11 +20,25 @@ extension BuildPipeline {
             ]
 
             let packageName = buildConfiguration.packageName
-            let paths = ["iphoneos", "iphonesimulator"].map { "\(buildConfiguration.buildDirectory)/Release-\($0)" }
+            let prefix = "Release-"
+            
+            var paths: [String: String] = [:]
+
+            let enumerator = filesEnumerator(for: buildConfiguration.buildDirectory.pathString)
+
+            while let url = enumerator?.nextObject() as? URL {
+                guard let path = url.canonicalPath else { continue }
+                
+                let name = path.lastPathComponent
+                
+                if name.starts(with: prefix) {
+                    paths[name.replacingOccurrences(of: prefix, with: "")] = path
+                }
+            }
 
             let fManager = FileManager.default
             
-            for path in paths {
+            for path in paths.values {
                 let enumerator = filesEnumerator(for: path)
                 
                 let objectExtension = "o"
@@ -42,7 +56,7 @@ extension BuildPipeline {
             var frameworks: [String: [String]] = [:]
             var libraries: [String: [String]] = [:]
             
-            for path in paths {
+            for path in paths.values {
                 let url = URL(fileURLWithPath: path, isDirectory: true)
 
                 let keys: [URLResourceKey] = [.canonicalPathKey]
@@ -111,6 +125,8 @@ extension BuildPipeline {
                     throw "Unable to create XCFramework for \(packageName) pacakge"
                 }
             }
+            
+            prepareArtifacts(paths: paths)
         }
         
         private func convert(object: String, to staticName: String? = nil, at path: AbsolutePath) throws {
@@ -136,6 +152,39 @@ extension BuildPipeline {
                                                   includingPropertiesForKeys: keys,
                                                   options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants],
                                                   errorHandler: nil)
+        }
+        
+        private func prepareArtifacts(paths: [String: String]) {
+            let fManager = FileManager.default
+            
+            let artifactsExtensions: Set<String> = ["bundle"]
+            let artifactsPath = buildConfiguration.artifactsPath
+            
+            for path in paths {
+                let platform = path.key
+                let path = path.value
+                let platformArtifactsPath = artifactsPath.appending(component: platform)
+                
+                do {
+                    try fManager.createDirectory(at: platformArtifactsPath.asURL, withIntermediateDirectories: true)
+                    
+                    let enumerator = filesEnumerator(for: path)
+
+                    while let url = enumerator?.nextObject() as? URL {
+                        guard let canonicalPath = url.canonicalPath else { continue }
+                        
+                        if artifactsExtensions.contains(url.pathExtension) {
+                            let name = url.lastPathComponent
+                            let srcPath = canonicalPath
+                            let dstPath = platformArtifactsPath.appending(component: url.lastPathComponent).pathString
+                            
+                            try fManager.copyItem(atPath: srcPath, toPath: dstPath)
+                        }
+                    }
+                } catch {
+                    continue
+                }
+            }
         }
     }
 }

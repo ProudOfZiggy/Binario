@@ -22,4 +22,5 @@ struct PackageBuildConfiguration {
     var archivesPath: AbsolutePath { buildDirectory.appending(component: "archives") }
     var xcodeproj: AbsolutePath { dependency.absolutePath.appending(component: "\(packageName).xcodeproj") }
     var xcFrameworksOutputPath: AbsolutePath { buildDirectory.appending(component: "xcframeworks") }
+    var artifactsPath: AbsolutePath { xcFrameworksOutputPath.appending(component: "artifacts") }
 }

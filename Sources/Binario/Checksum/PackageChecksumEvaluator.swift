@@ -11,9 +11,9 @@ import TSCBasic
 
 class PackageChecksumEvaluator {
     /*
-     Seed can be changed if there was a breaking change in Binario.
-     In this case we must be sure that all framework adapted new changes after updating Binario.
-     In most cases seed is equal to last version with breaking changes
+     Seed can be changed if there was a breaking changes in Binario.
+     In this case we must be sure that all dependencies adapted new changes after updating Binario.
+     In most cases seed is equal to last version that contains breaking changes.
     */
     private let seed: Int? = 0_9_41
     

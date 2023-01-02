@@ -21,9 +21,19 @@ extension BuildPipeline {
             for command in commands {
                 attempts += 1
                 
-                let process = Process(arguments: command.arguments,
+                let process: TSCBasic.Process
+                
+                if buildConfiguration.xcprettyEnabled {
+                    let main = command.arguments.map { "\"\($0)\"" }.joined(separator: " ")
+                    process = Process(arguments: ["bash", "-c", "\(main) | xcpretty"],
                                       workingDirectory: buildConfiguration.dependency.absolutePath,
                                       outputRedirection: .none)
+                } else {
+                    process = Process(arguments: command.arguments,
+                                      workingDirectory: buildConfiguration.dependency.absolutePath,
+                                      outputRedirection: .none)
+                }
+                
                 try process.launch()
                 try process.waitUntilExit()
 

@@ -26,6 +26,10 @@ struct ResolveCommand: ParsableCommand {
     @Flag(name: .long,
           help: "Allow resolve binaries ignoring cache")
     var ignoreCache: Bool = false
+    
+    @Flag(name: .long,
+          help: "Use xcpretty to process logs")
+    var xcpretty: Bool = false
 
     //Just for better semantic
     private var packagesPath: String { packages }
@@ -156,7 +160,9 @@ struct ResolveCommand: ParsableCommand {
         var builtPackages: [Dependency] = []
 
         for dependency in dependencies {
-            let configuration = PackageBuildConfiguration(dependency: dependency, platforms: platforms)
+            var configuration = PackageBuildConfiguration(dependency: dependency, platforms: platforms)
+            configuration.xcprettyEnabled = xcpretty
+            
             let pipeline = BuildPipeline(buildConfiguration: configuration)
 
             do {

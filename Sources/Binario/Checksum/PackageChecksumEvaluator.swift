@@ -10,7 +10,13 @@ import CryptoKit
 import TSCBasic
 
 class PackageChecksumEvaluator {
-
+    /*
+     Seed can be changed if there was a breaking change in Binario.
+     In this case we must be sure that all framework adapted new changes after updating Binario.
+     In most cases seed is equal to last version with breaking changes
+    */
+    private let seed: Int? = 0_9_41
+    
     func evaluateChecksum(dependency: Dependency) throws -> PackageChecksum? {
         guard let checksumSource = dependency.configuration.checksumSource else {
             return PackageChecksum(packageName: dependency.name, value: "-")
@@ -30,6 +36,12 @@ class PackageChecksumEvaluator {
 
             hasher.update(data: data)
         }
+        
+        if var seed {
+            let data = withUnsafeBytes(of: &seed, { Data($0) })
+            hasher.update(data: data)
+        }
+        
         let checksum = hasher.finalize().compactMap { String(format: "%02x", $0) }.joined()
         return PackageChecksum(packageName: dependency.name, value: checksum)
     }

@@ -15,7 +15,7 @@ class PackageChecksumEvaluator {
      In this case we must be sure that all dependencies adapted new changes after updating Binario.
      In most cases seed is equal to last version that contains breaking changes.
     */
-    private let seed: Int? = 0_9_41
+    private let seed: Int? = 0_9_43
     
     func evaluateChecksum(dependency: Dependency) throws -> PackageChecksum? {
         guard let checksumSource = dependency.configuration.checksumSource else {

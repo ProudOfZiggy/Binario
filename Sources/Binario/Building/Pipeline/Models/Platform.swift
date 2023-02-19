@@ -18,6 +18,21 @@ enum Platform: String, CaseIterable {
         case .iOSSimulator: return "generic/platform=iOS Simulator"
         }
     }
+    
+    var buildName: String {
+        switch self {
+        case .iOS: return "iphoneos"
+        case .iOSSimulator: return "iphonesimulator"
+        }
+    }
+    
+    init?(libraryPlatform: String) {
+        switch libraryPlatform {
+        case "ios": self = .iOS
+        case "iossimulator": self = .iOSSimulator
+        default: return nil
+        }
+    }
 }
 
 extension Array where Element == Platform {

@@ -26,6 +26,7 @@ class BuildPipeline {
             case .build: try build()
             case .createXCFrameworks: try createXCFrameworks()
             case .script(let path): try runScript(path: path)
+            case .extractBundles: try extractBundles()
             case .defaultPipeline:
                 try clean()
                 try resolve()
@@ -52,6 +53,11 @@ class BuildPipeline {
 
     private func createXCFrameworks() throws {
         let action = CreateXCFramework(buildConfiguration: buildConfiguration)
+        try action.run()
+    }
+    
+    private func extractBundles() throws {
+        let action = ExtractXCFrameworksBundles(buildConfiguration: buildConfiguration)
         try action.run()
     }
 

@@ -24,4 +24,8 @@ struct PackageBuildConfiguration {
     var xcFrameworksOutputPath: AbsolutePath { buildDirectory.appending(component: "xcframeworks") }
     var artifactsPath: AbsolutePath { xcFrameworksOutputPath.appending(component: "artifacts") }
     var xcprettyEnabled: Bool = false
+    
+    func artifactsPath(`for` platform: Platform) -> AbsolutePath {
+        return artifactsPath.appending(component: platform.buildName)
+    }
 }

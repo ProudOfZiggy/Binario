@@ -15,6 +15,7 @@ extension BuildPipeline {
         case build
         case createXCFrameworks
         case defaultPipeline
+        case extractBundles
         case script(path: String)
 
         init(string: String) {
@@ -24,6 +25,7 @@ extension BuildPipeline {
             case "build": self = .build
             case "create-xcframeworks": self = .createXCFrameworks
             case "default-pipeline": self = .defaultPipeline
+            case "extract-bundles": self = .extractBundles
             default: self = .script(path: string)
             }
         }

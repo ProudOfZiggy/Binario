@@ -122,7 +122,7 @@ extension BuildPipeline {
                 try process.waitUntilExit()
 
                 if case .terminated(let errorCode) = process.result?.exitStatus, errorCode != 0 {
-                    throw "Unable to create XCFramework for \(packageName) pacakge"
+                    throw "Unable to create XCFramework for \(packageName) package"
                 }
             }
             
@@ -174,7 +174,6 @@ extension BuildPipeline {
                         guard let canonicalPath = url.canonicalPath else { continue }
                         
                         if artifactsExtensions.contains(url.pathExtension) {
-                            let name = url.lastPathComponent
                             let srcPath = canonicalPath
                             let dstPath = platformArtifactsPath.appending(component: url.lastPathComponent).pathString
                             

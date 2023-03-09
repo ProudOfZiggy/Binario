@@ -40,6 +40,14 @@ class SwiftPackage: Dependency {
         
         isResolved = true
     }
+    
+    override func resolveIfNeeded() throws -> Bool {
+        if configuration.checksumSource == resolvedPath {
+            try resolve()
+            return true
+        }
+        return false
+    }
 }
 
 extension SwiftPackage: CustomStringConvertible, CustomDebugStringConvertible {

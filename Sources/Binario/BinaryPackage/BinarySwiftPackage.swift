@@ -31,4 +31,6 @@ class BinarySwiftPackage: SwiftPackage {
         
         if !isValid { return nil }
     }
+    
+    override func resolve() throws {}
 }

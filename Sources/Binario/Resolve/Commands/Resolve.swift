@@ -117,9 +117,16 @@ struct ResolveCommand: ParsableCommand {
         var resolvedPackages: [Dependency] = []
 
         for package in dependencies {
-            print("Resolving \(package.name)")
-            try package.resolve()
+            print("Checking and resolving if needed - \(package.name)")
+            
+            let result = try package.resolveIfNeeded()
 
+            if result {
+                print("Resolved - \(package.name)")
+            } else {
+                print("Redundant resolving skipped - \(package.name)")
+            }
+            
             if package.hasChecksumSource {
                 resolvedPackages.append(package)
             } else {

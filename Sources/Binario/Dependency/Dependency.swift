@@ -53,6 +53,11 @@ class Dependency {
     func resolve() throws {
         isResolved = true
     }
+    
+    func resolveIfNeeded() throws -> Bool {
+        try resolve()
+        return true
+    }
 }
 
 extension Dependency: Hashable {

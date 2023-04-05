@@ -19,18 +19,40 @@ class BuildCommandsBuilder {
     }
     
     func buildCommands() -> [Command] {
-        buildConfiguration.platforms.map { Command(arguments: defaultArguments(for: $0)) }
+        buildConfiguration.platforms.map { Command(arguments: makeArguments(for: $0)) }
     }
     
-    private func defaultArguments(for platform: Platform) -> [String] {
-        ["xcrun",
-         "xcodebuild",
-         "-scheme", "\(buildConfiguration.packageName)",
-         "-configuration", "Release",
-         "-archivePath", "\(buildConfiguration.archivesPath)/Release-\(platform.rawValue)",
-         "-destination", platform.destination,
-         "BUILD_DIR=\(buildConfiguration.buildDirectory)",
-         "SKIP_INSTALL=NO",
-         "BUILD_LIBRARY_FOR_DISTRIBUTION=YES"]
+    private func makeArguments(for platform: Platform) -> [String] {
+        var arguments = [
+            "xcrun",
+            "xcodebuild",
+            "-scheme", "\(buildConfiguration.packageName)",
+            "-configuration", "Release",
+            "-archivePath", "\(buildConfiguration.archivesPath)/Release-\(platform.rawValue)",
+            "-destination", platform.destination,
+            "BUILD_DIR=\(buildConfiguration.buildDirectory)",
+            "SKIP_INSTALL=NO",
+            "BUILD_LIBRARY_FOR_DISTRIBUTION=YES"
+        ]
+        updateArgumentsIfNeeded(&arguments)
+        return arguments
+    }
+    
+    private func updateArgumentsIfNeeded(_ arguments: inout [String]) {
+        var mergeIndex: Int?
+        buildConfiguration.dependency.configuration.xcodeBuildSettings?.forEach { arg in
+            if let index = mergeIndex {
+                arguments[index] = arg
+                mergeIndex = nil
+            } else if arg.contains("="),
+                let key = arg.split(separator: "=").first,
+                let index = arguments.firstIndex(where: { $0.hasPrefix(key) }){
+                arguments[index] = arg
+            } else if let index = arguments.firstIndex(of: arg) {
+                mergeIndex = index + 1
+            } else {
+                arguments.append(arg)
+            }
+        }
     }
 }

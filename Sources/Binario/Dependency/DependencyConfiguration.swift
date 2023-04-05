@@ -13,12 +13,14 @@ struct DependencyConfiguration: Decodable {
     var checksumSource: AbsolutePath?
     
     private(set) var includeFiles: Set<String> = []
+    private(set) var xcodeBuildSettings: [String]?
     
     static var empty: DependencyConfiguration { DependencyConfiguration() }
     
     enum CodingKeys: CodingKey {
         case checksumSource
         case includeFiles
+        case xcodeBuildSettings
     }
     
     private init() {}
@@ -42,5 +44,6 @@ struct DependencyConfiguration: Decodable {
         
         _checksumSource = try? container.decodeIfPresent(String.self, forKey: .checksumSource)
         includeFiles = (try? container.decodeIfPresent(Set<String>.self, forKey: .includeFiles)) ?? []
+        xcodeBuildSettings = try? container.decodeIfPresent([String].self, forKey: .xcodeBuildSettings)
     }
 }

@@ -42,7 +42,7 @@ extension BuildPipeline {
 
 private extension PackageBuildConfiguration {
     var scriptEnvironment: [String: String] {
-        var env: [String: String] = [:]
+        var env: [String: String] = ProcessEnv.vars
         
         env["DEPENDENCY_NAME"] = packageName
         env["DEPENDENCY_BINARY_NAME"] = dependency.binaryName
